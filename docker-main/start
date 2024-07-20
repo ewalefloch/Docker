@@ -1,0 +1,51 @@
+#!/bin/bash
+echo pull de l\'image gnuplot 
+docker image pull bigpapoo/gnuplot
+
+echo -e "Création du volume \n"
+docker volume create sae103
+
+echo -e "Installation des scripts dans le volume\n"
+docker container run -d --name sae103-tmp -v sae103:/data bigpapoo/gnuplot
+docker cp gener sae103-tmp:/data
+docker cp scriptApache.php sae103-tmp:/data
+docker cp scriptJson.php sae103-tmp:/data
+docker cp scriptGraphe sae103-tmp:/data
+docker cp scriptCsv.php sae103-tmp:/data
+docker cp SelData.php sae103-tmp:/data
+docker cp sample.json sae103-tmp:/data
+docker cp sample.apache sae103-tmp:/data
+docker cp sample.csv sae103-tmp:/data
+
+echo -e "Fin installation ! \n" 
+docker container stop sae103-tmp
+docker container rm sae103-tmp
+
+echo -e "Lancement du conteneur...\n"
+docker container run -ti --name sae103-Graphe -w /data -v sae103:/data bigpapoo/gnuplot ./scriptGraphe
+
+echo -e "Récupération des fichiers...\n"
+mkdir resultat
+docker container cp sae103-Graphe:/data/file.png ./resultat/file.png
+
+echo -e "Génération du fichier HTML\n"
+echo "<html lang=\"en\">" > resultat/index.html
+echo "<head>" >> resultat/index.html
+echo "<meta charset=\"UTF-8\">" >> resultat/index.html
+echo "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">" >> resultat/index.html
+echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> resultat/index.html
+echo "<title>Document</title>" >> resultat/index.html
+echo "</head>" >> resultat/index.html
+echo "<body>" >> resultat/index.html
+echo "<h1>Sujet 4</h1>" >> resultat/index.html
+echo "<p>Statistique sur les ip par rapport à la taille de la requête</p>" >> resultat/index.html
+echo "<img src='file.png' alt="">" >> resultat/index.html
+echo "</body>" >> resultat/index.html
+echo "</html>" >> resultat/index.html
+
+echo -e "Suppréssion du conteneur...\n"
+docker container stop sae103-Graphe
+docker container rm sae103-Graphe
+
+echo Suppréssion du volume
+docker volume rm sae103

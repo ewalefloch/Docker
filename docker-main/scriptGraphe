@@ -1,0 +1,31 @@
+#!/bin/bash
+
+echo Standartisation du fichier CSV...
+tr -d '\"' < sample.csv > CVStmp
+./scriptCsv.php > log
+echo -e "Standartisation réussi ! \n"s
+
+echo Standartisation du fichier Apache...
+tr '"' " " < sample.apache | tr -s ' ' > Apachetmp
+./scriptApache.php >> log
+echo -e "Standartisation réussi ! \n"
+
+echo Standartisation du fichier Json...
+tr -d "[]{" < sample.json | tr "," " " | tr -s " " | tr "\n" " " | tr "}" "\n" | tr -s " " | cut -d" " -f3,4,6,8,10,12,14,16,18,20,22- | tr '"' " " | tr -s " " > JSONtmp
+./scriptJson.php >> log
+echo -e "Standartisation réussi ! \n"
+
+
+echo 1","8 > Valeurs
+
+echo Envoie des valeurs...
+./SelData.php > donneGnop
+
+echo -e "Lancement de la génération\n"
+
+./gener
+
+rm CVStmp
+rm JSONtmp
+rm Apachetmp
+
